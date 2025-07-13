@@ -27,7 +27,7 @@ resource "aws_instance" "web_server" {
     http_tokens = "required"
   }
   tags = {
-    name = "web_server_${count.index}"
+    Name = "web_server_${count.index}"
     role = "web"
   }
   vpc_security_group_ids = [aws_security_group.mgmt.id, aws_security_group.web_server.id]
@@ -49,7 +49,7 @@ resource "aws_instance" "db_server" {
 
   vpc_security_group_ids = [aws_security_group.mgmt.id, aws_security_group.db.id]
   tags = {
-    name = "db_server"
+    Name = "db_server"
     role = "db"
   }
 }
