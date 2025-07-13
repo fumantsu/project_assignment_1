@@ -15,10 +15,10 @@
 resource "aws_instance" "web_server" {
   count = local.server_amount
 
-  ami            = data.aws_ami.ubuntu_lts.id
-  instance_type  = "t3.micro" # t2.micro free-tier
-  key_name       = aws_key_pair.ansible_connection.key_name
-  subnet_id = data.aws_subnets.main_vpc.ids["${count.index}"]
+  ami           = data.aws_ami.ubuntu_lts.id
+  instance_type = "t3.micro" # t2.micro free-tier
+  key_name      = aws_key_pair.ansible_connection.key_name
+  subnet_id     = data.aws_subnets.main_vpc.ids["${count.index}"]
 
   credit_specification {
     cpu_credits = "standard"
@@ -30,15 +30,15 @@ resource "aws_instance" "web_server" {
     Name = "web_server_${count.index}"
     role = "web"
   }
-  vpc_security_group_ids = [aws_security_group.mgmt.id, aws_security_group.web_server.id]
+  vpc_security_group_ids = [aws_security_group.mgmt.id, aws_security_group.web_server.id, aws_security_group.internet.id]
 }
 
 resource "aws_instance" "db_server" {
 
-  ami            = data.aws_ami.ubuntu_lts.id
-  instance_type  = "t3.micro" # t2.micro free-tier
-  key_name       = aws_key_pair.ansible_connection.key_name
-  subnet_id = data.aws_subnets.main_vpc.ids[2]
+  ami           = data.aws_ami.ubuntu_lts.id
+  instance_type = "t3.micro" # t2.micro free-tier
+  key_name      = aws_key_pair.ansible_connection.key_name
+  subnet_id     = data.aws_subnets.main_vpc.ids[2]
 
   credit_specification {
     cpu_credits = "standard"
@@ -47,7 +47,7 @@ resource "aws_instance" "db_server" {
     http_tokens = "required"
   }
 
-  vpc_security_group_ids = [aws_security_group.mgmt.id, aws_security_group.db.id]
+  vpc_security_group_ids = [aws_security_group.mgmt.id, aws_security_group.db.id, aws_security_group.internet.id]
   tags = {
     Name = "db_server"
     role = "db"
