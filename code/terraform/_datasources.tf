@@ -1,9 +1,9 @@
 data "aws_vpc" "main_vpc" {
-    id = var.vpc_id
+  id = local.vpc_id
 }
 data "aws_ami" "ubuntu_lts" {
-  most_recent      = true
-  owners           = ["amazon"]
+  most_recent = true
+  owners      = ["amazon"]
 
   filter {
     name   = "name"
