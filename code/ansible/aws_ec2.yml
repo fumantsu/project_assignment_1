@@ -1,0 +1,18 @@
+plugin: amazon.aws.aws_ec2
+
+regions:
+  - eu-west-1
+
+iam_role_arn: arn:aws:iam::291705473768:role/tf-deployment-role
+
+hostnames: 
+  - tag:Name
+keyed_groups:
+  - key: tags['role']
+
+compose:
+  ansible_host: public_ip_address
+  ansible_user: "'ubuntu'"
+  ansible_ssh_private_key_file: "'/tmp/ansible_deploy_id'"
+
+

@@ -1,0 +1,6 @@
+  tasks:
+    - name: Run Shell Command
+      command: echo "Hello World"
+  # ansible.builtin.apt:
+  #   name: nginx
+  #   state: present

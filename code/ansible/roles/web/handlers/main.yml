@@ -1,0 +1,7 @@
+handlers:
+  - name: Restart the Nginx service
+    service:
+      name: nginx
+      state: restarted
+    become: true
+    become_user: root 
