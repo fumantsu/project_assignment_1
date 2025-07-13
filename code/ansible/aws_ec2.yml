@@ -5,10 +5,10 @@ regions:
 
 iam_role_arn: arn:aws:iam::291705473768:role/tf-deployment-role
 
-hostnames: 
-  - tag:Name
+hostnames: tag:Name
 keyed_groups:
-  - key: tags['role']
+  - key: tags.role
+    separator: ""
 
 compose:
   ansible_host: public_ip_address

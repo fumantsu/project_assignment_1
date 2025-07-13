@@ -1,6 +1,53 @@
-  tasks:
-    - name: Run Shell Command
-      command: echo "Hello World"
-  # ansible.builtin.apt:
-  #   name: nginx
-  #   state: present
+---
+  - name: Install nginx
+    ansible.builtin.apt:
+      name: nginx
+      state: present
+    become: yes
+  
+  - name: Ensure nginx is enabled and running
+    systemd:
+      name: nginx
+      state: started
+      enabled: yes
+
+  - name: Copy new website configuration file
+    ansible.builtin.copy:
+      src: files/default_one
+      dest: /etc/nginx/sites-available
+    become: yes  
+
+  - name: Make new website configuration available
+    ansible.builtin.file:
+      src: /etc/nginx/sites-available/default_one
+      dest:  /etc/nginx/sites-enabled/default_one
+      state: link
+    become: yes
+
+  - name: Remove default website configuration as available
+    ansible.builtin.file:
+      path:  /etc/nginx/sites-enabled/default
+      state: absent
+    become: yes
+    notify: restart nginx
+
+  - name: Copy new index file
+    ansible.builtin.copy:
+      src: files/index.html
+      dest: /var/www/html
+    become: yes
+   
+  - name: Copy simple monitoring script
+    ansible.builtin.copy:
+      src: files/nginx_monitoring.sh
+      dest: /usr/local/bin
+      mode: "0770"
+    become: yes
+
+  - name: Create a cron job to run the monitoring script
+    ansible.builtin.cron:
+      name: "check_nginx"
+      minute: "*/5"
+      job: "/usr/local/bin/nginx_monitoring.sh"
+      user: root
+    become: yes

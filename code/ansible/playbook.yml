@@ -13,6 +13,11 @@
   roles:
     - common
 
+- hosts: web
+  gather_facts: false
+  roles:
+    - web    
+
 - hosts: localhost
   tasks:
     - name: Decrypt the key

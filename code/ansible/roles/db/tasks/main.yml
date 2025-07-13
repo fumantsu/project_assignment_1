@@ -1,0 +1,6 @@
+---
+  - name: Install Postgres
+    ansible.builtin.apt:
+      name: postgresql
+      state: present
+    become: yes
