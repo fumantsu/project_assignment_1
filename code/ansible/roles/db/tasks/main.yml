@@ -1,6 +1,39 @@
 ---
-  - name: Install Postgres
-    ansible.builtin.apt:
-      name: postgresql
-      state: present
-    become: yes
+
+- name: Install Postgres
+  ansible.builtin.apt:
+    name: postgresql
+    state: present
+  become: true
+
+- name: Connect to database
+  ansible.builtin.command:
+    cmd: psql -d postgres -p 5432 -U postgres
+  register: db_connect_result
+  changed_when: db_connect_result.rc != 0
+
+# - name: Change postgres password
+#   ansible.builtin.command:
+#     cmd: "psql -d postgres -p 5432 -U postgres -c 'ALTER USER postgres WITH PASSWORD 'new_password';'"
+#   register: db_connect_result
+
+# - name: "Create database"
+#   ansible.builtin.command:
+#     cmd: "psql -d postgres -p 5432 -U postgres -c 'CREATE DATABASE {{ new_db_name }}';'"
+#   register: db_create_result
+
+# - name: "Create new user"
+#   ansible.builtin.command:
+#     cmd: "psql -d postgres -p 5432 -U postgres -c 'CREATE USER {{ new_db_user }} WITH PASSWORD 'new_password';'"
+#   register: db_user_result
+
+# - name: "Grant db user access to app db"
+#   ansible.builtin.command:
+#     cmd: "psql -d postgres -p 5432 -U postgres -c 'GRANT ALL PRIVILEGES ON DATABASE {{ new_db_name }} TO {{ new_db_user }};'"
+#   register: db_result
+
+# - name: "Execute script from variable"
+#   ansible.builtin.command:
+#     cmd: "psql {{ db_name }} -c {{ migration_sql }}"
+#   become_user: postgres
+#   register: sql_response_variable

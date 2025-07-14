@@ -1,0 +1,3 @@
+db_new_postgresdb_name: mydb
+db_new_postgresdb_table: mytable
+db_new_postgresdb_user: db_user
