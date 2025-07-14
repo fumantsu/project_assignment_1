@@ -30,12 +30,20 @@
     path: /etc/nginx/sites-enabled/default
     state: absent
   become: true
-  notify: restart nginx
+  notify: Restart nginx
 
 - name: Copy new index file
   ansible.builtin.copy:
     src: files/index.html
     dest: /var/www/html
+  become: true
+
+- name: Copy extra files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /var/www/html
+  loop:
+    - "files/quote.html"
   become: true
 
 - name: Copy simple monitoring script

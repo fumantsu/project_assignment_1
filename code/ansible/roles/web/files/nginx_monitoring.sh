@@ -8,6 +8,7 @@ do
     EXIT_CODE=$?
     if [ ! $EXIT_CODE == 0 ]; then
       echo "fail"
+      sleep 5
       RETRIES=$(( $RETRIES + 1 ))
     else
       exit 0

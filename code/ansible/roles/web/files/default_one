@@ -8,6 +8,7 @@ server {
 
       root /var/www/html;
       index index.html;
+      include file quote.html
 
       location / {
               try_files $uri $uri/ =404;
