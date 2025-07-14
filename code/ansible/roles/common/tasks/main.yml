@@ -1,8 +1,8 @@
 ---
 
-  - name: Update and upgrade apt
-    ansible.builtin.apt: 
-      update_cache: yes
-      upgrade: yes
-      cache_valid_time: 3600
-    become: yes
+- name: Update and upgrade apt
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: true
+    cache_valid_time: 3600
+  become: true

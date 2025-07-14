@@ -1,25 +1,36 @@
-- hosts: localhost
+---
+
+- name: Prepare AWS ssh key
+  gather_facts: false
+  hosts: localhost
   vars:
     ssh_private_key_file: "./ansible_ssh_info"
-    
   tasks:
     - name: Decrypt the key
       ansible.builtin.command:
         cmd: "ansible-vault decrypt {{ ssh_private_key_file }} --output /tmp/ansible_deploy_id"
-      no_log: true 
+      register: cmd_output
+      changed_when: cmd_output.rc != 0
+      no_log: true
 
-- hosts: aws_ec2
+- name: Run common role
+  hosts: aws_ec2
   gather_facts: false
   roles:
     - common
 
-- hosts: web
+- name: Run web role on web servers
+  hosts: web
   gather_facts: false
   roles:
-    - web    
+    - web
 
-- hosts: localhost
+- name: Remove the AWS ssh key
+  gather_facts: false
+  hosts: localhost
   tasks:
     - name: Decrypt the key
       ansible.builtin.command:
         cmd: "rm -f /tmp/ansible_deploy_id"
+      register: cmd_output
+      changed_when: cmd_output.rc != 0
