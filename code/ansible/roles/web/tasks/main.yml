@@ -1,16 +1,14 @@
 ---
 
-- name: Install nginx
+- name: Install packages
   ansible.builtin.apt:
-    name: nginx
+    name:
+      - nginx
+      - postgresql-client
+      - python3-psycopg2
+      - libpq-dev
     state: present
   become: true
-
-- name: Ensure nginx is enabled and running
-  ansible.builtin.systemd:
-    name: nginx
-    state: started
-    enabled: true
 
 - name: Copy new website configuration file
   ansible.builtin.copy:
@@ -30,20 +28,11 @@
     path: /etc/nginx/sites-enabled/default
     state: absent
   become: true
-  notify: Restart nginx
 
 - name: Copy new index file
   ansible.builtin.copy:
     src: files/index.html
     dest: /var/www/html
-  become: true
-
-- name: Copy extra files
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: /var/www/html
-  loop:
-    - "files/quote.html"
   become: true
 
 - name: Copy simple monitoring script
@@ -59,4 +48,24 @@
     minute: "*/5"
     job: "/usr/local/bin/nginx_monitoring.sh"
     user: root
+  become: true
+
+- name: Get the IP of the database server
+  ansible.builtin.set_fact:
+    db_ip_address: "{{ hostvars['db_server']['private_ip_address'] }}"
+  delegate_to: 'db_server'
+
+- name: Query the database for the quote
+  community.postgresql.postgresql_query:
+    login_host: "{{ db_ip_address }}"
+    login_db: mydb
+    login_user: db_user
+    login_password: P@sss0rd_0
+    query: SELECT phrase FROM mytable LIMIT 1
+  register: quoting
+
+- name: Create quote page from template
+  template:
+    src: templates/quote.html.j2
+    dest: /var/www/html/quote.html
   become: true

@@ -7,10 +7,10 @@
     ssh_private_key_file: "./ansible_ssh_info"
   tasks:
     - name: Decrypt the key
-      ansible.builtin.command:
-        cmd: "ansible-vault decrypt {{ ssh_private_key_file }} --output /tmp/ansible_deploy_id"
-      register: cmd_output
-      changed_when: cmd_output.rc != 0
+      ansible.builtin.copy:
+        src: "{{ ssh_private_key_file }}"
+        dest: /tmp/ansible_deploy_id
+        mode: "0600"
       no_log: true
 
 - name: Run common role
@@ -19,9 +19,15 @@
   roles:
     - common
 
+- name: Run db role on database server
+  hosts: db
+  gather_facts: false
+  roles:
+    - db  
+
 - name: Run web role on web servers
   hosts: web
-  gather_facts: false
+  gather_facts: true
   roles:
     - web
 

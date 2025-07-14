@@ -1,39 +1,91 @@
 ---
 
-- name: Install Postgres
+- name: Install Postgres and other packages
   ansible.builtin.apt:
-    name: postgresql
+    name:
+      - postgresql
+      - python3-psycopg2
+      - libpq-dev
     state: present
   become: true
 
-- name: Connect to database
-  ansible.builtin.command:
-    cmd: psql -d postgres -p 5432 -U postgres
-  register: db_connect_result
-  changed_when: db_connect_result.rc != 0
+- name: "Change listen address"
+  lineinfile:
+    dest: "/etc/postgresql/16/main/postgresql.conf"
+    regexp: '^#?listen_addresses='
+    line: "listen_addresses = '*'"
+    state: present
+    create: true
+  become: true
+  notify:
+    - Restart postgres
 
-# - name: Change postgres password
-#   ansible.builtin.command:
-#     cmd: "psql -d postgres -p 5432 -U postgres -c 'ALTER USER postgres WITH PASSWORD 'new_password';'"
-#   register: db_connect_result
+- name: Create the databases
+  community.postgresql.postgresql_db:
+    name: "{{ db_new_database_name }}"
+    encoding: "UTF-8"
+  become: true
+  become_user: postgres
 
-# - name: "Create database"
-#   ansible.builtin.command:
-#     cmd: "psql -d postgres -p 5432 -U postgres -c 'CREATE DATABASE {{ new_db_name }}';'"
-#   register: db_create_result
+- name: Create the new user
+  community.postgresql.postgresql_user:
+    login_db: "{{ db_new_database_name }}"
+    name: "{{ db_new_database_user }}"
+    password: "{{ vault_db_user_pass }}"
+  become: true
+  become_user: postgres
 
-# - name: "Create new user"
-#   ansible.builtin.command:
-#     cmd: "psql -d postgres -p 5432 -U postgres -c 'CREATE USER {{ new_db_user }} WITH PASSWORD 'new_password';'"
-#   register: db_user_result
+- name: Create mydb table
+  community.postgresql.postgresql_table:
+    name: "{{ db_new_table_name }}"
+    columns:
+      - id serial primary key
+      - phrase text
+    login_db: "{{ db_new_database_name }}"
+  become: true
+  become_user: postgres
 
-# - name: "Grant db user access to app db"
-#   ansible.builtin.command:
-#     cmd: "psql -d postgres -p 5432 -U postgres -c 'GRANT ALL PRIVILEGES ON DATABASE {{ new_db_name }} TO {{ new_db_user }};'"
-#   register: db_result
+- name: Grant access to new user in new database
+  community.postgresql.postgresql_privs:
+    login_db: "{{ db_new_database_name }}"
+    privs: "{{ item.privs }}"
+    type: "{{ item.type }}"
+    objs: "{{ item.objs | default(omit) }}"
+    role: "{{ db_new_database_user }}"
+  with_items:
+    - { type: database, privs: ALL}
+    - { type: table, objs: ALL_IN_SCHEMA, privs: ALL}
+    - { type: sequence, privs: USAGE, SELECT, objs: mytable_id_seq }
+  become: true
+  become_user: postgres
 
-# - name: "Execute script from variable"
-#   ansible.builtin.command:
-#     cmd: "psql {{ db_name }} -c {{ migration_sql }}"
-#   become_user: postgres
-#   register: sql_response_variable
+- name: Update the default user
+  community.postgresql.postgresql_user:
+    login_db: "postgres"
+    name: "postgres"
+    password: "{{ vault_postgres_user_pass }}"
+  become: true
+  become_user: postgres
+
+- name: Add entries to pg_hba
+  community.postgresql.postgresql_pg_hba:
+    dest: "/etc/postgresql/16/main/pg_hba.conf"
+    address: "{{ item.address | default(omit) }}"
+    contype: "{{ item.type }}"
+    databases: "{{ item.database }}"
+    method: "{{ item.method }}"
+    users: "{{ item.user }}"
+  become: true
+  become_user: postgres
+  with_items:
+    - {type: host, database: "{{ db_new_database_name }}", user: "{{ db_new_database_user }}", address: "0.0.0.0/0", method: "md5"}
+  notify:
+    - Restart postgres
+
+- name: Add some data to the mydb table
+  community.postgresql.postgresql_query:
+    login_host: "localhost"
+    login_db: "{{ db_new_database_name }}"
+    login_user: "{{ db_new_database_user }}"
+    login_password: "{{ vault_db_user_pass }}"
+    query: "{{ db_add_line_query }}"

@@ -6,3 +6,9 @@
     upgrade: true
     cache_valid_time: 3600
   become: true
+
+- name: Install acl
+  ansible.builtin.apt:
+    name: acl
+    state: present
+  become: true

@@ -2,7 +2,7 @@
 
 RETRIES=0
 
-while [ $RETRIES -eq 3 ]
+while [ $RETRIES -le 3 ]
 do 
     /usr/bin/curl -S -o /dev/null http://localhost
     EXIT_CODE=$?
@@ -14,7 +14,7 @@ do
       exit 0
     fi   
 done
-logger -p syslog.warn "Restarting nginx process"
+logger -p syslog.warn "Failing to reach the localhost.Restarting nginx process"
 /usr/bin/systemctl start nginx
 /usr/bin/curl -S -o /dev/null http://localhost
 EXIT_CODE_AFTER_RESTART=$?

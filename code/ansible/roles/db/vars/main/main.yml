@@ -1,0 +1,8 @@
+db_new_database_name: mydb
+db_new_table_name: mytable
+db_new_database_user: db_user
+db_quotes: 
+  - "We are the knights who say Ni!"
+  - "We are now the knights who say Ekki-Ekki-Ekki-Ekki-PTANG. Zoom- Boing!"
+db_add_line_query: "INSERT INTO {{ db_new_table_name }} (phrase) VALUES ('{{ db_quotes | random }}');"
+db_get_line_query: "SELECT phrase FROM {{ db_new_table_name }} LIMIT 1;"
