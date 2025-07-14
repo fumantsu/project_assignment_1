@@ -1,0 +1,4 @@
+db_new_database_name: mydb
+db_new_table_name: mytable
+db_new_database_user: db_user
+

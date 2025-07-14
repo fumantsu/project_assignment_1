@@ -58,10 +58,10 @@
 - name: Query the database for the quote
   community.postgresql.postgresql_query:
     login_host: "{{ db_ip_address }}"
-    login_db: mydb
-    login_user: db_user
-    login_password: P@sss0rd_0
-    query: SELECT phrase FROM mytable LIMIT 1
+    login_db: "{{ db_new_database_name }}"
+    login_user: "{{ db_new_database_user }}"
+    login_password: "{{ vault_db_user_pass }}"
+    query: "SELECT phrase FROM {{ db_new_table_name }} LIMIT 1"
   register: quoting
 
 - name: Create quote page from template
